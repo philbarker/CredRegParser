@@ -13,6 +13,7 @@ setup(
     install_requires=[
         "setuptools >= 47.3.0",
         "rdflib >= 5.0.0",
+        "rdflib-jsonld>=0.5.0",
         "cache-requests >= 4.0.0"],
     python_requires=">=3.8",
     packages=find_packages()

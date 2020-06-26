@@ -27,3 +27,5 @@ redis==3.5.3
 redislite==5.0.165407
 cache-requests==4.0.0
 argparse==1.4.0
+setuptools==47.3.1
+wheel==0.34.2

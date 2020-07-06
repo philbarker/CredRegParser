@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="CredRegParser",
-    version="0.1.0",
+    version="0.1.1",
     author="Phil Barker",
     url="https://github.com/philbarker/CredRegParser",
     description="Fetch and parse resource metadata from the Credential Registry.",

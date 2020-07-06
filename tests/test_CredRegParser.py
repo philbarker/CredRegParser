@@ -5,6 +5,7 @@ from json import loads, dumps
 
 cred_reg_base_uri = "https://credentialengineregistry.org/resources/"
 ctid = "ce-f1782b95-d234-4237-83e4-48b8c0f538d8"
+fakectid = "ce-f1782b95-d234-4237-83e4-48b8c0f538d7"
 
 
 @pytest.fixture
@@ -42,7 +43,6 @@ def test_init(empty_parser):
 
 
 def test_set_resource_uri(empty_parser):
-    # FIXME add some mal-formed ctids
     parser = empty_parser
     parser.set_resource_uri(ctid)
     assert (
@@ -63,14 +63,19 @@ def test_set_resource_uri(empty_parser):
 
 
 def test_get_json_str(empty_parser, expected_json_str):
-    # FIXME: add some non-existant ctids
     parser = empty_parser
     parser.set_resource_uri(ctid)
-    json_str = parser._get_json_str()
+    code, json_str = parser._get_json_str()
+    assert code == 200
     assert len(json_str) == len(expected_json_str)
     assert (
         json_str[:100] == expected_json_str[:100]
     )  # after ~100 chars the ordering is arbitrary
+    parser = empty_parser
+    parser.set_resource_uri(fakectid)
+    code, json_str = parser._get_json_str()
+    assert code == 404
+    json_str = "no data returned"
 
 
 def test_set_json(empty_parser, expected_json):
@@ -82,6 +87,12 @@ def test_set_json(empty_parser, expected_json):
     assert parser.md_json["@id"] == expected_json["@id"]
     assert parser.md_json["@type"] == expected_json["@type"]
     assert parser.md_json["ceterms:name"] == expected_json["ceterms:name"]
+    parser = empty_parser
+    parser.set_resource_uri(fakectid)
+    with pytest.raises(RuntimeError) as e:
+        parser.set_md_json()
+    expected_msg = "No data returned for resource ctid"
+    assert e.value.args[0][:34] == expected_msg
 
 
 def test_get_context(empty_parser):

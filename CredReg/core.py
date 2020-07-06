@@ -1,4 +1,5 @@
 from rdflib import Graph, URIRef, plugin
+from urllib.error import HTTPError
 
 # import requests
 from json import loads, dumps
@@ -84,17 +85,22 @@ class CredRegParser:
             raise RuntimeError(msg)
         if response.status_code < 300:
             self.status_code = str(response.status_code)
-            return response.text
+            return response.status_code, response.text
         else:
-            msg = "Error retrieving resource data from URL. HTTP status code: " + str(
-                response.status_code
-            )
-            raise RuntimeError(msg)
+            return response.status_code, "no data returned"
 
     def set_md_json(self):
         # fixme: check for errors from get_json_str before setting md_json
-        self.md_json = loads(self._get_json_str())
-        return self
+        status_code, text = self._get_json_str()
+        if status_code < 300:
+            self.md_json = loads(text)
+            return self
+        else:
+            msg = "No data returned for resource ctid %s. Code %s" % (
+                self.resource_uri,
+                status_code,
+            )
+            raise RuntimeError(msg)
 
     def _get_context(self):
         context_url = self.md_json["@context"]
@@ -129,12 +135,18 @@ class CredRegParser:
         #        for ns in namespaces.keys():
         #            uri = URIRef(namespaces[ns])
         #            md_graph.bind(ns, uri)
-        if self.resource_uri != "":
-            md_graph.parse(location=self.resource_uri, format="json-ld")
-            self.md_graph = md_graph
-        else:
+        if self.resource_uri == "":
             msg = "Set cred uri before trying to get its metadata."
             raise RuntimeError(msg)
+        else:
+            try:
+                md_graph.parse(location=self.resource_uri, format="json-ld")
+                self.md_graph = md_graph
+            except HTTPError as h:
+                msg = h.url + " " + str(h.code) + " " + h.msg
+                raise RuntimeError(msg)
+            except Exception as e:
+                raise e
         return self
 
     def dump_md_graph(self):

@@ -23,7 +23,7 @@ typed-ast==1.4.1
 urllib3==1.26.5
 wcwidth==0.2.4
 psutil==5.7.0
-redis==3.5.3
+redis==4.5.3
 redislite==5.0.165407
 cache-requests==4.0.0
 argparse==1.4.0
